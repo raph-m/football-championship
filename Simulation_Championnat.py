@@ -172,7 +172,7 @@ print(rare_event_basic("Norwich",500))
 """
 """
 memo = np.zeros(10)
-for i in range(10):
+for i in range(10)
     memo[i] = rare_event_complex(5000)
 print(memo)
 """
@@ -224,22 +224,89 @@ def theorem_2(N,n,law,a,b):
                 probas[j]+=1
     plt.plot(gamma,probas/n)
     plt.axvline(1-alpha/2)
-    plt.legend("probability of having one of the N**gamma best players winning the championship")
+    if(law=="uniform"):
+        plt.title("championship with "+str(N)+" players with a uniform distribution of strength, the probabilities were computed with "+str(n)+" different championships")
+
+    if(law=="beta"):
+        plt.title("championship with "+str(N)+" players with a beta distribution of strength, parameters are a = "+str(a)+", b = "+str(b)+" the probabilities were computed with "+str(n)+" different championships")
+
+
+    plt.xlabel("gamma")
+    plt.ylabel("probability of having one of the N**gamma best players winning the championship")
     plt.show()
 
 plt.close('all')
-theorem_2(1000, 100, "uniform", 1., 1.)
+#theorem_2(5000, 100, "uniform", 1., 1.)
+
+def theorem3(N,n,strength):
+    team1 = np.ones(N+1)
+    team2 = np.ones(N+1)
+    for i in range(N+1):
+        if (i%2 == 0):
+            team2[i]=0.5
+    team1[N] = strength
+    team2[N] = strength
+    sigma1=0
+    sigma2=0
+    for i in range(n):
+        print(i)
+        result1 = championnat(team1)
+        result2 = championnat(team2)
+        if (who_wins2(result1)==N):
+            sigma1+=1
+        if (who_wins2(result2)==N):
+            sigma2+=1
+    ans1 = 100*sigma1/n
+    ans2 = 100*sigma2/n
+    print("pourcentage teams avec disparités: "+str(ans2))
+    print("pourcentage teams uniformes: "+str(ans1))
+    return ans1,ans2
 
 
+#theorem3(200,100,1.5)
 
+def illustrate_theorem3(strength):
+    #Ns=[10]
+    Ns = [20,50,100,200]
+    disparate = np.zeros(len(Ns))
+    uniform = np.zeros(len(Ns))
+    i=0
+    n=100
+    for N in Ns:
+        print(N)
+        uniform[i],disparate[i] = theorem3(N,500,1.5)
+        i+=1
+    plt.title("illustration of theorem 3 with Stregth(N+1) = "+str(strength)+" and with "+str(n)+" simulations")
+    plt.xlabel("number of players")
+    plt.ylabel("probability of winning for the N+1 player (red = disparate teams, blue = uniform teams")
+    plt.plot(Ns,uniform)
+    plt.plot(Ns,disparate,'r')
+    plt.show()
 
+#theorem3(300,100,1.2)
 
+def get_vu():
+    u=np.random.rand(10000)
+    return np.mean(u/((u+1)**2))
 
+def get_eps(N,alpha):
+    return  np.sqrt((2-alpha)*np.log(N)/(N*get_vu()))
 
+def theorem3_bis(N,n,coef):
+    alpha = 1.
+    vu = get_vu()
+    team = np.random.rand(N+1)
+    team[N] = 1+(1.+coef)*get_eps(N,alpha)
+    sigma=0.
+    for i in range(n):
+        print(i)
+        result = championnat(team)
+        if (who_wins2(result) == N):
+            sigma+=1
+    return 100*sigma/n
 
-
-
-
+print(theorem3_bis(900,100,0.5))
+print(theorem3_bis(900,100,-0.5))
 
 
 
