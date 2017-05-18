@@ -52,7 +52,6 @@ def symetrize(x):
 """"fonction prenant en entrée un résultat et donnant le classement sous la forme d'un vecteur avec les positions de chacun des clubs"""
 def who_wins(result):
     current = np.sum(result,axis=1)
-    sorted = np.transpose(np.sort(current))
     sorted = np.flip(sorted,axis=0)
     order = np.zeros(c)
     for i in range(c):
