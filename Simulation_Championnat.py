@@ -15,7 +15,7 @@ Values_Ranking=np.array(b-(1+np.array(range(17))))**theta
 
 
 mode = 1
-c = len(Clubs)
+
 
 if mode:
     V = Values_Points
@@ -24,14 +24,15 @@ else:
 
 """fonction prenant en entrée des valeurs intrinsèques et simulant un résultat (résultat sous forme d'une matrice)"""
 def championnat(nu):
+    c=len(nu)
     #on calcules les probabilités de victoire définies par le modèle
     winprobs = [[(nu[j])/(nu[i] + nu[j]) for i in range(c)] for j in range(c)]
     #on simule le match aller
     aller = rd.binomial(1, winprobs, [c, c])
-    aller = symetrize(aller)
+    aller = symetrize(aller,c)
     #le match retour
     retour = rd.binomial(1, winprobs, [c, c])
-    retour = symetrize(retour)
+    retour = symetrize(retour,c)
     #on combine les deux
 
     #result = aller + retour
@@ -40,7 +41,7 @@ def championnat(nu):
     return result
 
 """"prend en entrée une matrice et sort cette même matrice mais en mettant des 0 sur la diago et symétrise la partie inférieure gauche"""
-def symetrize(x):
+def symetrize(x,c):
     ans = x
     for i in range(c):
         x[i][i] = 0
@@ -51,8 +52,9 @@ def symetrize(x):
 
 """"fonction prenant en entrée un résultat et donnant le classement sous la forme d'un vecteur avec les positions de chacun des clubs"""
 def who_wins(result):
+    c=len(result[0])
     current = np.sum(result,axis=1)
-    sorted = np.transpose(np.sort(current))
+    sorted = np.sort(current)
     sorted = np.flip(sorted,axis=0)
     order = np.zeros(c)
     for i in range(c):
@@ -72,6 +74,7 @@ def rank(u,sorted):
 
 """une fonction pratique qui prend en entrée le nom d'un Club et donne son numéro dans la liste"""
 def get_number_with_name(name):
+    c=len(Clubs)
     for i in range(c):
         if(Clubs[i]==name):
             return i
@@ -125,6 +128,7 @@ def un_facteur(result,nu,nu_prime,i,j):
 
 def facteur(result,nu,nu_prime):
     ans = 1.0
+    c=len(nu)
     for i in range(c):
         for j in range(i):
             ans*=un_facteur(result,nu,nu_prime,i,j)
@@ -172,3 +176,79 @@ for i in range(10):
     memo[i] = rare_event_complex(5000)
 print(memo)
 """
+
+""""illustration du théorème 2:
+On sait que l'assumption A est respectée pour différentes distributions:
+*la distribution uniforme avec alpha = 1
+*la distribution arcsin avec alpha = 1/2
+*les distribution Beta B(a,b) avec alpha = b (et b<2)
+
+Le théorème 2 montre alors que:
+*pour tout gamma < 1 - alpha/2,
+les N**gamma meileurs joueurs ne gagnent presque jamais
+
+*pour tout gamma > 1 - alpha/2,
+les N**gamma meilleurs joueurs gagnent presque toujours
+    """
+
+""""1: loi uniforme
+on va simplement faire un grand nombre de simulations et à chaque fois regarder"""
+
+def who_wins2(result):
+    current = np.sum(result,axis=1)
+    max = 0
+    best = 0
+    for i in range(len(current)):
+        if(current[i]>=max):
+            max=current[i]
+            best = i
+    return best
+
+def get_teams(N,law,a,b):
+    if(law=="uniform"):
+        return np.flip(np.sort(np.random.rand(N)),axis=0),1.0
+    if(law=="beta"):
+        return np.flip(np.sort(np.random.beta(a,b,N)),axis=0),b
+
+
+def theorem_2(N,n,law,a,b):
+    teams, alpha = get_teams(N,law,a,b)
+    gamma_size = 100
+    gamma = np.linspace(0.0,1.0,gamma_size)
+    probas = np.zeros(gamma_size)
+    for i in range(n):
+        print(i)
+        result = championnat(teams)
+        for j in range(len(gamma)):
+            if(who_wins2(result)<N**gamma[j]):
+                probas[j]+=1
+    plt.plot(gamma,probas/n)
+    plt.axvline(1-alpha/2)
+    plt.legend("probability of having one of the N**gamma best players winning the championship")
+    plt.show()
+
+plt.close('all')
+theorem_2(1000, 100, "uniform", 1., 1.)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
