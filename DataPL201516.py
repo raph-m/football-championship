@@ -1,5 +1,6 @@
 import numpy as np
 import numpy.random as rd
+import matplotlib.pyplot as plt
 
 kappa=1.5
 b,theta=23,2.
@@ -85,11 +86,13 @@ def winning_championship_proba(nu,n,name):
             sigma+=1
     return sigma/n
 
-
 """
 for n in [3000]:
     for name in ["Chelsea", "ManCity", "Arsenal", "ManU", "Tottenham"]:
         print("proba of winning for "+name+" with n = "+str(n)+": "+str(winning_championship_proba(V,n,name)))
+
+for x in [8.0/(8+13),2.0/7,2./9,1./6,1./101]:
+    print(x)
 """
 
 """"la première fonction g (elle dit si tel club a gagné le championnat ou pas)"""
@@ -131,11 +134,44 @@ def rare_event_complex_aux(result):
     current = who_wins(result)
     if (current[get_number_with_name("Leicester")]>0.5):
         return False
+    if ((current[get_number_with_name("ManU")]<2.5) or (current[get_number_with_name("ManCity")]<2.5)):
+        return False
+    if (current[get_number_with_name("Liverpool")]<6.5 or current[get_number_with_name("Chelsea")]<6.5):
+        return False
+    return True
 
-def rare_event_complex(name,m):
 
+def rare_event_complex(m):
+    nu = V.copy()
+    number = get_number_with_name("Leicester")
 
+    nu[number] = np.sum(V)/5
+    nu[get_number_with_name("Chelsea")]=V[get_number_with_name("Chelsea")]/3
+    nu[get_number_with_name("ManCity")]=V[get_number_with_name("ManCity")]/3
+    nu[get_number_with_name("Liverpool")]=V[get_number_with_name("Liverpool")]/3
+    nu[get_number_with_name("ManU")]=V[get_number_with_name("ManU")]/2
+
+    sigma = 0.0
+    total = 0.0
+    for i in range(m):
+        result = championnat(nu)
+        if(rare_event_complex_aux(result)):
+            total = total + 1
+            sigma += facteur(result,V,nu)
+    print("taux de réalisation: "+str(total/m))
+    return sigma/m
+
+"""
 print(winning_championship_proba(V,100,"Leicester"))
 print(rare_event_basic("Leicester",100))
 print(rare_event_basic("Norwich",500))
-
+"""
+"""
+memo = np.zeros(10)
+for i in range(10):
+    memo[i] = rare_event_complex(5000)
+print(memo)
+"""
+plt.plot([1.26570990e-04, 2.01865804e-05, 3.26431843e-05, 6.61886962e-05,
+   2.58138462e-05, 1.84203752e-04, 3.10175049e-05, 4.33434212e-05, 1.86150871e-04, 1.51414221e-05])
+plt.show()
