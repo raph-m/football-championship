@@ -21,7 +21,7 @@ if mode:
 else:
     V = Values_Ranking
 
-""""""
+"""fonction prenant en entrée des valeurs intrinsèques et simulant un résultat (résultat sous forme d'une matrice)"""
 def championnat(nu):
     #on calcules les probabilités de victoire définies par le modèle
     winprobs = [[(nu[j])/(nu[i] + nu[j]) for i in range(c)] for j in range(c)]
@@ -38,6 +38,7 @@ def championnat(nu):
 
     return result
 
+""""prend en entrée une matrice et sort cette même matrice mais en mettant des 0 sur la diago et symétrise la partie inférieure gauche"""
 def symetrize(x):
     ans = x
     for i in range(c):
@@ -47,6 +48,7 @@ def symetrize(x):
             ans[i][j] = 1-ans[j][i]
     return ans
 
+""""fonction prenant en entrée un résultat et donnant le classement sous la forme d'un vecteur avec les positions de chacun des clubs"""
 def who_wins(result):
     current = np.sum(result,axis=1)
     sorted = np.transpose(np.sort(current))
@@ -56,6 +58,7 @@ def who_wins(result):
         order[i] = rank(current[i],sorted)
     return order
 
+"""une fonction auxiliaire qui permet de retrouver le score de qq dans la liste triée des scores et ainsi de connaitre son classement"""
 def rank(u,sorted):
     ans = 0
     indic = True
@@ -66,11 +69,13 @@ def rank(u,sorted):
             ans+=1
     return ans
 
+"""une fonction pratique qui prend en entrée le nom d'un Club et donne son numéro dans la liste"""
 def get_number_with_name(name):
     for i in range(c):
         if(Clubs[i]==name):
             return i
 
+""""un premier calcul de proba: on simule n championnats et on calcule la proba que le club gagne"""
 def winning_championship_proba(nu,n,name):
     sigma = 0.0
     number = get_number_with_name(name)
@@ -80,12 +85,14 @@ def winning_championship_proba(nu,n,name):
             sigma+=1
     return sigma/n
 
-print(who_wins(championnat(V)))
-n=3000
 
-#for name in ["Chelsea", "ManCity", "Arsenal", "ManU", "Tottenham"]:
- #  print("proba of winning for "+name+" with n = "+str(n)+": "+str(winning_championship_proba(V,n,name)))
+"""
+for n in [3000]:
+    for name in ["Chelsea", "ManCity", "Arsenal", "ManU", "Tottenham"]:
+        print("proba of winning for "+name+" with n = "+str(n)+": "+str(winning_championship_proba(V,n,name)))
+"""
 
+""""la première fonction g (elle dit si tel club a gagné le championnat ou pas)"""
 def wins(result,name):
     current = who_wins(result)
     if(current[get_number_with_name(name)]<0.5):
@@ -93,20 +100,22 @@ def wins(result,name):
     else:
         return 0
 
+""""un premier calcul permettant de simuler m évènements avec décalage préférentiel """
 def rare_event_basic(name,m):
     nu = V.copy()
     number = get_number_with_name(name)
     nu[number] = np.sum(V)/10
     sigma = 0.0
+    total = 0.0
     for i in range(m):
         result = championnat(nu)
         if(wins(result,name)==1):
+            total = total + 1
             sigma += facteur(result,V,nu)
     return sigma/m
 
-
 def p(i,j,nu):
-    return nu[j]/(nu[i]+nu[j])
+    return nu[i]/(nu[i]+nu[j])
 
 def un_facteur(result,nu,nu_prime,i,j):
     return (1-p(i,j,nu))*((p(i,j,nu)*(1-p(i,j,nu_prime))/(p(i,j,nu_prime)*(1-p(i,j,nu))))**result[i][j])/(1-p(i,j,nu_prime))
@@ -118,4 +127,6 @@ def facteur(result,nu,nu_prime):
             ans*=un_facteur(result,nu,nu_prime,i,j)
     return ans
 
-print(rare_event_basic("Norwich",1000))
+print(winning_championship_proba(V,100,"Leicester"))
+print(rare_event_basic("Leicester",100))
+
