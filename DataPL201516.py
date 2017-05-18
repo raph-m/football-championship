@@ -127,6 +127,15 @@ def facteur(result,nu,nu_prime):
             ans*=un_facteur(result,nu,nu_prime,i,j)
     return ans
 
+def rare_event_complex_aux(result):
+    current = who_wins(result)
+    if (current[get_number_with_name("Leicester")]>0.5):
+        return False
+
+def rare_event_complex(name,m):
+
+
 print(winning_championship_proba(V,100,"Leicester"))
 print(rare_event_basic("Leicester",100))
+print(rare_event_basic("Norwich",500))
 
