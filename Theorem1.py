@@ -33,7 +33,7 @@ def theorem1_exp():
 #we generate the "strengths" from the exponential distribution
     for i in range(n):
         V = rd.exponential(scale, c)
-        V.sort()
+        V=np.sort(V)
         result = sim.who_wins(sim.championnat(V))
 
 

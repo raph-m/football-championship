@@ -22,7 +22,24 @@ if mode:
 else:
     V = Values_Ranking
 
-"""fonction prenant en entrée des valeurs intrinsèques et simulant un résultat (résultat sous forme d'une matrice)"""
+"""fonction prenant en entrée des valeurs intrinsèques et simulant un résultat (résultat sous forme d'une matrice)
+On prend ici en compte les matchs allers et retours"""
+def championnat_avec_retour(nu):
+    c=len(nu)
+    #on calcules les probabilités de victoire définies par le modèle
+    winprobs = [[(nu[j])/(nu[i] + nu[j]) for i in range(c)] for j in range(c)]
+    #on simule le match aller
+    aller = rd.binomial(1, winprobs, [c, c])
+    aller = symetrize(aller,c)
+    #le match retour
+    retour = rd.binomial(1, winprobs, [c, c])
+    retour = symetrize(retour,c)
+    #on combine les deux
+
+    result = aller + retour
+
+    return result
+
 def championnat(nu):
     c=len(nu)
     #on calcules les probabilités de victoire définies par le modèle
@@ -35,12 +52,11 @@ def championnat(nu):
     retour = symetrize(retour,c)
     #on combine les deux
 
-    #result = aller + retour
     result = aller
 
     return result
 
-""""prend en entrée une matrice et sort cette même matrice mais en mettant des 0 sur la diago et symétrise la partie inférieure gauche"""
+""""prend en entrée une matrice et sort cette même matrice mais en mettant des 0 sur la diago et 'symétrise' la partie inférieure gauche"""
 def symetrize(x,c):
     ans = x
     for i in range(c):
@@ -89,14 +105,6 @@ def winning_championship_proba(nu,n,name):
             sigma+=1
     return sigma/n
 
-"""
-for n in [3000]:
-    for name in ["Chelsea", "ManCity", "Arsenal", "ManU", "Tottenham"]:
-        print("proba of winning for "+name+" with n = "+str(n)+": "+str(winning_championship_proba(V,n,name)))
-
-for x in [8.0/(8+13),2.0/7,2./9,1./6,1./101]:
-    print(x)
-"""
 
 """"la première fonction g (elle dit si tel club a gagné le championnat ou pas)"""
 def wins(result,name):
@@ -118,6 +126,7 @@ def rare_event_basic(name,m):
         if(wins(result,name)==1):
             total = total + 1
             sigma += facteur(result,V,nu)
+    print("taux de réalisation de l'évènement après échantillonage préférentiel: " + str(total / m))
     return sigma/m
 
 def p(i,j,nu):
@@ -162,7 +171,7 @@ def rare_event_complex(m):
         if(rare_event_complex_aux(result)):
             total = total + 1
             sigma += facteur(result,V,nu)
-    print("taux de réalisation: "+str(total/m))
+    print("taux de réalisation de l'évènement après échantillonage préférentiel: "+str(total/m))
     return sigma/m
 
 """
@@ -304,10 +313,10 @@ def theorem3_bis(N,n,coef):
         if (who_wins2(result) == N):
             sigma+=1
     return 100*sigma/n
-
+"""
 print(theorem3_bis(900,100,0.5))
 print(theorem3_bis(900,100,-0.5))
-
+"""
 
 
 
