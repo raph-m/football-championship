@@ -174,34 +174,6 @@ def rare_event_complex(m):
     print("taux de réalisation de l'évènement après échantillonage préférentiel: "+str(total/m))
     return sigma/m
 
-"""
-print(winning_championship_proba(V,100,"Leicester"))
-print(rare_event_basic("Leicester",100))
-print(rare_event_basic("Norwich",500))
-"""
-"""
-memo = np.zeros(10)
-for i in range(10)
-    memo[i] = rare_event_complex(5000)
-print(memo)
-"""
-
-""""illustration du théorème 2:
-On sait que l'assumption A est respectée pour différentes distributions:
-*la distribution uniforme avec alpha = 1
-*la distribution arcsin avec alpha = 1/2
-*les distribution Beta B(a,b) avec alpha = b (et b<2)
-
-Le théorème 2 montre alors que:
-*pour tout gamma < 1 - alpha/2,
-les N**gamma meileurs joueurs ne gagnent presque jamais
-
-*pour tout gamma > 1 - alpha/2,
-les N**gamma meilleurs joueurs gagnent presque toujours
-    """
-
-""""1: loi uniforme
-on va simplement faire un grand nombre de simulations et à chaque fois regarder"""
 
 def who_wins2(result):
     current = np.sum(result,axis=1)
@@ -226,7 +198,6 @@ def theorem_2(N,n,law,a,b):
     gamma = np.linspace(0.0,1.0,gamma_size)
     probas = np.zeros(gamma_size)
     for i in range(n):
-        print(i)
         result = championnat(teams)
         for j in range(len(gamma)):
             if(who_wins2(result)<N**gamma[j]):
@@ -244,8 +215,6 @@ def theorem_2(N,n,law,a,b):
     plt.ylabel("probability of having one of the N**gamma best players winning the championship")
     plt.show()
 
-plt.close('all')
-#theorem_2(5000, 100, "uniform", 1., 1.)
 
 def theorem3(N,n,strength):
     team1 = np.ones(N+1)
@@ -274,7 +243,7 @@ def theorem3(N,n,strength):
 
 #theorem3(200,100,1.5)
 
-def illustrate_theorem3(strength):
+def illustrate_theorem3(strength,Ns,n):
     #Ns=[10]
     Ns = [20,50,100,200]
     disparate = np.zeros(len(Ns))
@@ -283,7 +252,7 @@ def illustrate_theorem3(strength):
     n=100
     for N in Ns:
         print(N)
-        uniform[i],disparate[i] = theorem3(N,500,1.5)
+        uniform[i],disparate[i] = theorem3(N,n,strength)
         i+=1
     plt.title("illustration of theorem 3 with Stregth(N+1) = "+str(strength)+" and with "+str(n)+" simulations")
     plt.xlabel("number of players")
@@ -308,15 +277,11 @@ def theorem3_bis(N,n,coef):
     team[N] = 1+(1.+coef)*get_eps(N,alpha)
     sigma=0.
     for i in range(n):
-        print(i)
         result = championnat(team)
         if (who_wins2(result) == N):
             sigma+=1
     return 100*sigma/n
-"""
-print(theorem3_bis(900,100,0.5))
-print(theorem3_bis(900,100,-0.5))
-"""
+
 
 
 
