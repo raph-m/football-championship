@@ -105,11 +105,27 @@ def winning_championship_proba(nu,n,name):
             sigma+=1
     return sigma/n
 
+def get_variance(nu,n,name):
+    number = get_number_with_name(name)
+    x=np.zeros(n)
+    for i in range(n):
+        current = who_wins(championnat(nu))
+        if(current[number] < 0.5):
+            x[i]=1
+    return np.std(x)
+
 
 """"la première fonction g (elle dit si tel club a gagné le championnat ou pas)"""
 def wins(result,name):
     current = who_wins(result)
     if(current[get_number_with_name(name)]<0.5):
+        return 1
+    else:
+        return 0
+
+def wins2(result,team_number):
+    current = who_wins(result)
+    if(current[team_number]<0.5):
         return 1
     else:
         return 0
@@ -126,8 +142,22 @@ def rare_event_basic(name,m):
         if(wins(result,name)==1):
             total = total + 1
             sigma += facteur(result,V,nu)
-    print("taux de réalisation de l'évènement après échantillonage préférentiel: " + str(total / m))
+    print("taux de réalisation de l'évènement après échantillonage préférentiel: " + str(100*total / m)+"%")
     return sigma/m
+
+def get_variance_rare_event_basic(name,m):
+    nu = V.copy()
+    number = get_number_with_name(name)
+    nu[number] = np.sum(V)/10
+    sigma = 0.0
+    total = 0.0
+    x=np.zeros(m)
+    for i in range(m):
+        result = championnat(nu)
+        if(wins(result,name)==1):
+             x[i] = facteur(result,V,nu)
+    return np.std(x)
+
 
 def p(i,j,nu):
     return nu[i]/(nu[i]+nu[j])
@@ -171,7 +201,7 @@ def rare_event_complex(m):
         if(rare_event_complex_aux(result)):
             total = total + 1
             sigma += facteur(result,V,nu)
-    print("taux de réalisation de l'évènement après échantillonage préférentiel: "+str(total/m))
+    print("taux de réalisation de l'évènement après échantillonage préférentiel: "+str(100*total/m)+"%")
     return sigma/m
 
 
@@ -217,49 +247,29 @@ def theorem_2(N,n,law,a,b):
 
 
 def theorem3(N,n,strength):
-    team1 = np.ones(N+1)
-    team2 = np.ones(N+1)
-    for i in range(N+1):
-        if (i%2 == 0):
-            team2[i]=0.5
-    team1[N] = strength
-    team2[N] = strength
+    disparate = np.ones(N+1)/3.
+    disparate[0] = strength
+    disparate[1] = 0.8
+    uniform = np.ones(N+1)/2.
+    uniform[0] = strength
+
     sigma1=0
     sigma2=0
     for i in range(n):
-        print(i)
-        result1 = championnat(team1)
-        result2 = championnat(team2)
-        if (who_wins2(result1)==N):
+        result2 = championnat(disparate)
+        result1 = championnat(uniform)
+        if (who_wins2(result1)==0):
             sigma1+=1
-        if (who_wins2(result2)==N):
+        if (who_wins2(result2)==0):
             sigma2+=1
     ans1 = 100*sigma1/n
     ans2 = 100*sigma2/n
-    print("pourcentage teams avec disparités: "+str(ans2))
-    print("pourcentage teams uniformes: "+str(ans1))
     return ans1,ans2
 
 
 #theorem3(200,100,1.5)
 
-def illustrate_theorem3(strength,Ns,n):
-    #Ns=[10]
-    Ns = [20,50,100,200]
-    disparate = np.zeros(len(Ns))
-    uniform = np.zeros(len(Ns))
-    i=0
-    n=100
-    for N in Ns:
-        print(N)
-        uniform[i],disparate[i] = theorem3(N,n,strength)
-        i+=1
-    plt.title("illustration of theorem 3 with Stregth(N+1) = "+str(strength)+" and with "+str(n)+" simulations")
-    plt.xlabel("number of players")
-    plt.ylabel("probability of winning for the N+1 player (red = disparate teams, blue = uniform teams")
-    plt.plot(Ns,uniform)
-    plt.plot(Ns,disparate,'r')
-    plt.show()
+
 
 #theorem3(300,100,1.2)
 
@@ -283,7 +293,74 @@ def theorem3_bis(N,n,coef):
     return 100*sigma/n
 
 
+def create_population(nu):
+    c=len(nu)
+    ans = []
+    for j in range(1,c):
+        for i in range(j):
+            ans.append((i,j))
+    return ans
 
+
+
+def modify(result,ro,nu):
+    c=len(nu)
+    number_of_matches = int((c**2 - c)/2)
+    number_to_modify = int(ro*number_of_matches)
+    matches = create_population(nu)
+    np.random.shuffle(matches)
+    matches_to_modify = matches[:number_to_modify]
+    for match in matches_to_modify:
+        i,j= match
+        issue = np.random.binomial(1,nu[i] / (nu[i] + nu[j]),1)
+        result[i][j] = issue
+        result[j][i] = 1-issue
+    return result
+
+def score(result,team_number):
+    return np.sum(result[team_number])
+
+def next_result(result,ro,bound,team_number,nu):
+    ans = modify(result,ro,nu)
+    if (score(ans,team_number)>= bound):
+        return ans,0
+    else:
+        return result,1
+
+
+def proba_score(bound_inf,team_number,nu,n):
+    total = 0.
+    for i in range(n):
+        result = championnat(nu)
+        if(score(result,team_number)>=bound_inf):
+            total+=1
+            last_no_rejected = result.copy()
+    if (total < 0.5):
+        print("attention aucun résultat convenable n'a été trouvé pour la première borne")
+    return total/n, last_no_rejected
+
+
+def conditionnal_proba(result,nu,ro,team_number,n,inf_bound,sup_bound=0,last_bound = False):
+    taux_de_rejection = 0.
+    total = 0.
+    last_no_rejected = result.copy()
+
+    for i in range(n):
+        result,rej=next_result(result,ro,inf_bound,team_number,nu)
+        taux_de_rejection += rej
+        if (last_bound):
+            total += wins2(result,team_number)
+        else:
+            if(score(result, team_number) >= sup_bound):
+                total += 1
+                last_no_rejected = result.copy()
+
+    print("taux de rejection pour les bornes ("+str(inf_bound)+", "+str(sup_bound)+"): "+str(taux_de_rejection*100/n)+"%")
+    if(total < 0.5):
+        print("attention aucun résultat convenable n'a été trouvé pour les bornes ("+str(inf_bound)+", "+str(sup_bound)+")")
+
+    print("score: "+str(score(last_no_rejected,team_number)))
+    return total/n,last_no_rejected
 
 
 

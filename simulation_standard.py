@@ -1,12 +1,14 @@
 """Ce programme permet de simuler un grand nombre de championnats et permet d'évaluer la pobabilité de gagner pour
 des équipes ayant une force suffisamment élévée. Attention, ici les matchs retours n'ont pas encore été implémentés"""
 import Simulation_Championnat as sc
+import numpy as np
 
 #le nombre de championnats qu'on va simuler
 n = 1000
 
+print("according to our model, we compute the chances of winning for the best teams (given with a 95% interval)")
 for name in ["Chelsea","ManCity","Arsenal","ManU","Tottenham"]:
-    print("proba of winning for " + name + " with n = " + str(n) + ": " + str(100*sc.winning_championship_proba(sc.V,n,name))+"%")
+    print("proba of winning for " + name + " with n = " + str(n) + ": " + str(100*sc.winning_championship_proba(sc.V,n,name))+"% +- "+str(196*sc.get_variance(sc.V,n,name)/np.sqrt(n))+"%")
 
 print("")
 print("We now compare it to the probabilities according to the bookmakers")
