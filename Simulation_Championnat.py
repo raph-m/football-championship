@@ -24,7 +24,7 @@ else:
     V = Values_Ranking
 
 """fonction prenant en entrée des valeurs intrinsèques et simulant un résultat (résultat sous forme d'une matrice)
-On prend ici en compte les matchs allers et retours"""
+On prend ici en compte les matchs retours"""
 def championnat_avec_retour(nu):
     c=len(nu)
     #on calcules les probabilités de victoire définies par le modèle
@@ -41,6 +41,7 @@ def championnat_avec_retour(nu):
 
     return result
 
+"""idem sans matchs retours"""
 def championnat(nu):
     c=len(nu)
     #on calcules les probabilités de victoire définies par le modèle
@@ -96,7 +97,8 @@ def get_number_with_name(name):
         if(Clubs[i]==name):
             return i
 
-""""un premier calcul de proba: on simule n championnats et on calcule la proba que le club gagne"""
+""""un premier calcul de proba: on simule n championnats et on calcule la proba que le club gagne
+ici comme dans la plupart des méthodes, nu représente le vecteur de valeurs intrinsèques et n le nombre de simulations"""
 def winning_championship_proba(nu,n,name):
     sigma = 0.0
     number = get_number_with_name(name)
@@ -106,6 +108,7 @@ def winning_championship_proba(nu,n,name):
             sigma+=1
     return sigma/n
 
+"""renvoie la variance de la proba calculée juste au dessus"""
 def get_variance(nu,n,name):
     number = get_number_with_name(name)
     x=np.zeros(n)
@@ -124,6 +127,7 @@ def wins(result,name):
     else:
         return 0
 
+"""idem mais en prenant en entrée un numéro d'équipe et non pas un nom"""
 def wins2(result,team_number):
     current = who_wins(result)
     if(current[team_number]<0.5):
@@ -146,6 +150,7 @@ def rare_event_basic(name,m):
     print("taux de réalisation de l'évènement après échantillonage préférentiel: " + str(100*total / m)+"%")
     return sigma/m
 
+""""une mérhode qui permet d'avoir la variance pour la variable juste au dessus"""
 def get_variance_rare_event_basic(name,m):
     nu = V.copy()
     number = get_number_with_name(name)
@@ -159,13 +164,15 @@ def get_variance_rare_event_basic(name,m):
              x[i] = facteur(result,V,nu)
     return np.std(x)
 
-
+"""une fonction auxiliaire pour récupérer les pij"""
 def p(i,j,nu):
     return nu[i]/(nu[i]+nu[j])
 
+"""uen fonction auxiliaire pour le calcul lors de l'échantillonage préférentiel"""
 def un_facteur(result,nu,nu_prime,i,j):
     return (1-p(i,j,nu))*((p(i,j,nu)*(1-p(i,j,nu_prime))/(p(i,j,nu_prime)*(1-p(i,j,nu))))**result[i][j])/(1-p(i,j,nu_prime))
 
+"""encore une fonction auxiliaire"""
 def facteur(result,nu,nu_prime):
     ans = 1.0
     c=len(nu)
@@ -174,6 +181,7 @@ def facteur(result,nu,nu_prime):
             ans*=un_facteur(result,nu,nu_prime,i,j)
     return ans
 
+"""encore une fonction auxiliaire"""
 def rare_event_complex_aux(result):
     current = who_wins(result)
     if (current[get_number_with_name("Leicester")]>0.5):
@@ -184,7 +192,8 @@ def rare_event_complex_aux(result):
         return False
     return True
 
-
+"""la méthode qui fait le décalage préférentiel. On doit modifier les forces intrinsèques de plusieurs équipes pour
+forcer la réalisation de l'évènement"""
 def rare_event_complex(m):
     nu = V.copy()
     number = get_number_with_name("Leicester")
@@ -207,7 +216,7 @@ def rare_event_complex(m):
     print("taux de réalisation de l'évènement après échantillonage préférentiel: "+str(100*total/m)+"%")
     return sigma/m
 
-
+"""renvoie le numéro de l'équipe qui gagne le championnat"""
 def who_wins2(result):
     current = np.sum(result,axis=1)
     max = 0
@@ -218,13 +227,14 @@ def who_wins2(result):
             best = i
     return best
 
+"""permet de générer des vecteurs nu selon des distributions précises"""
 def get_teams(N,law,a,b):
     if(law=="uniform"):
         return np.flip(np.sort(np.random.rand(N)),axis=0),1.0
     if(law=="beta"):
         return np.flip(np.sort(np.random.beta(a,b,N)),axis=0),b
 
-
+"""une fonction qui produit un tracé illustrant le théorème 2"""
 def theorem_2(N,n,law,a,b):
     teams, alpha = get_teams(N,law,a,b)
     gamma_size = 100
@@ -248,7 +258,7 @@ def theorem_2(N,n,law,a,b):
     plt.ylabel("probability of having one of the N**gamma best players winning the championship")
     plt.show()
 
-
+"""une fonction qui permet d'illustrer le théorème 3 (un exemple concret)"""
 def theorem3(N,n,strength):
     disparate = np.ones(N+1)*0.8
     disparate[0] = strength
@@ -269,23 +279,18 @@ def theorem3(N,n,strength):
     ans2 = 100*sigma2/n
     return ans1,ans2
 
-
-#theorem3(200,100,1.5)
-
-
-
-#theorem3(300,100,1.2)
-
+"""une fonction qui permet de v(u) pour la distribution uniforme"""
 def get_vu():
     u=np.random.rand(10000)
     return np.mean(u/((u+1)**2))
 
+"""une fonction auxiliaire pour calculer epsilon N"""
 def get_eps(N,alpha):
     return  np.sqrt((2-alpha)*np.log(N)/(N*get_vu()))
 
+"""une fonction qui produit une illustration du théorème 3"""
 def theorem3_bis(N,n,coef):
     alpha = 1.
-    vu = get_vu()
     team = np.random.rand(N+1)
     team[N] = 1+(1.+coef)*get_eps(N,alpha)
     print("strength: "+str(team[N]))
@@ -296,7 +301,7 @@ def theorem3_bis(N,n,coef):
             sigma+=1
     return 100*sigma/n
 
-
+"""une fonction auxiliaire qui génère une liste avec tous matchs possibles"""
 def create_population(nu):
     c=len(nu)
     ans = []
@@ -305,8 +310,7 @@ def create_population(nu):
             ans.append((i,j))
     return ans
 
-
-
+"""une fonction qui prend un résultat puis resimule une fraction ro des matchs et renvoie le nouveau résultat"""
 def modify(result,ro,nu):
     c=len(nu)
     number_of_matches = int((c**2 - c)/2)
@@ -321,9 +325,11 @@ def modify(result,ro,nu):
         result[j][i] = 1-issue
     return result
 
+"""renvoie le score d'une équipe"""
 def score(result,team_number):
     return np.sum(result[team_number])
 
+""""renvoie le terme suivant dans la suite pour le splitting"""
 def next_result(result,ro,bound,team_number,nu):
     ans = modify(result,ro,nu)
     if (score(ans,team_number)>= bound):
@@ -331,7 +337,7 @@ def next_result(result,ro,bound,team_number,nu):
     else:
         return result,1
 
-
+""""probabilité que l'équipe dépasse ce score"""
 def proba_score(bound_inf,team_number,nu,n):
     total = 0.
     for i in range(n):
@@ -343,7 +349,7 @@ def proba_score(bound_inf,team_number,nu,n):
         print("attention aucun résultat convenable n'a été trouvé pour la première borne")
     return total/n, last_no_rejected
 
-
+"""renvoie la probabilité de dépasser la borne sup conditionnée à la borne inf """
 def conditionnal_proba(result,nu,ro,team_number,n,inf_bound,sup_bound=0,last_bound = False):
     taux_de_rejection = 0.
     total = 0.
@@ -366,9 +372,7 @@ def conditionnal_proba(result,nu,ro,team_number,n,inf_bound,sup_bound=0,last_bou
     print("score: "+str(score(last_no_rejected,team_number)))
     return total/n,last_no_rejected
 
-
-
-
+"""idem mais avec le rang de l'équipe"""
 def next_result2(result,ro,bound,team_number,nu):
     ans = modify(result,ro,nu)
     if (who_wins(result)[team_number]<= bound):
@@ -376,6 +380,7 @@ def next_result2(result,ro,bound,team_number,nu):
     else:
         return result,1
 
+"""idem mais avec les rangs"""
 def proba_score2(bound_inf,team_number,nu,n):
     total = 0.
     for i in range(n):
@@ -387,7 +392,7 @@ def proba_score2(bound_inf,team_number,nu,n):
         print("attention aucun résultat convenable n'a été trouvé pour la première borne")
     return total/n, last_no_rejected
 
-
+""""idem mais avec les rangs"""
 def conditionnal_proba2(result,nu,ro,team_number,n,inf_bound,sup_bound=0,last_bound = False):
     taux_de_rejection = 0.
     total = 0.
