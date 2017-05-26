@@ -5,8 +5,8 @@ import scipy.stats
 
 
 """Objectif: On fait l'hypothèse suivante: on souhaite se faire de l'argent à l'aide d'arbitrage sur des cotes de
-bookmakers. On se pose comme modèle le modèle avec kappa ou teta. Nous partons du principe que les bookmakers sont
-précis sur les évènements assez fréquent comme la victoire de grandes équipes mais qu'ils ne savent estimer les
+bookmakers. On se pose comme modèle le modèle avec kappa ou theta. Nous partons du principe que les bookmakers sont
+précis sur les évènements assez fréquents comme la victoire de grandes équipes mais qu'ils ne savent pas estimer les
 probabilités des évènements rares. Nous optimisons donc notre modèle pour coller aux valeurs des bookmakers sur les
 grandes équipes. Nous pouvons ensuite estimer les probabilités des évènements rares grâce à notre modélisation
 informatique et nous pouvons alors parier sur les évènements qui sont mal côtés.
