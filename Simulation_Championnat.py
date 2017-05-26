@@ -3,6 +3,7 @@ import numpy.random as rd
 import matplotlib.pyplot as plt
 
 kappa=1.5
+#kappa = 1.73581251742
 b,theta=23,2.
 
 #PL season 2015/16
@@ -197,6 +198,8 @@ def rare_event_complex(m):
     sigma = 0.0
     total = 0.0
     for i in range(m):
+        if(i%100 == 0):
+            print(i*100.0/1000000.0)
         result = championnat(nu)
         if(rare_event_complex_aux(result)):
             total = total + 1
@@ -285,6 +288,7 @@ def theorem3_bis(N,n,coef):
     vu = get_vu()
     team = np.random.rand(N+1)
     team[N] = 1+(1.+coef)*get_eps(N,alpha)
+    print("strength: "+str(team[N]))
     sigma=0.
     for i in range(n):
         result = championnat(team)
