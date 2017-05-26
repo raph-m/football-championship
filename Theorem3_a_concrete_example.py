@@ -24,7 +24,7 @@ Si toutes les équipes sont très faibles, le
 def get_first_strength_uniform(N,n):
     ans = 0.
     strength = 0.45
-    while(ans < 70 or ans >= 100):
+    while(ans < 70):
         strength += 0.05
         print(strength)
         ans , poubelle = sc.theorem3(N,n,strength)
@@ -34,7 +34,7 @@ def get_first_strength_uniform(N,n):
 def get_first_strength_disparate(N,n):
     ans = 0.
     strength = 0.45
-    while(ans < 70 or ans >= 100):
+    while(ans < 70):
         strength += 0.05
         print(strength)
         poubelle, ans = sc.theorem3(N,n,strength)

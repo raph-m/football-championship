@@ -250,10 +250,10 @@ def theorem_2(N,n,law,a,b):
 
 
 def theorem3(N,n,strength):
-    disparate = np.ones(N+1)/3.
+    disparate = np.ones(N+1)*0.8
     disparate[0] = strength
-    disparate[1] = 0.8
-    uniform = np.ones(N+1)/2.
+    disparate[1] = 1.5
+    uniform = np.ones(N+1)
     uniform[0] = strength
 
     sigma1=0
@@ -369,6 +369,46 @@ def conditionnal_proba(result,nu,ro,team_number,n,inf_bound,sup_bound=0,last_bou
 
 
 
+def next_result2(result,ro,bound,team_number,nu):
+    ans = modify(result,ro,nu)
+    if (who_wins(result)[team_number]<= bound):
+        return ans,0
+    else:
+        return result,1
+
+def proba_score2(bound_inf,team_number,nu,n):
+    total = 0.
+    for i in range(n):
+        result = championnat(nu)
+        if(who_wins(result)[team_number]<= bound_inf):
+            total+=1
+            last_no_rejected = result.copy()
+    if (total < 0.5):
+        print("attention aucun résultat convenable n'a été trouvé pour la première borne")
+    return total/n, last_no_rejected
+
+
+def conditionnal_proba2(result,nu,ro,team_number,n,inf_bound,sup_bound=0,last_bound = False):
+    taux_de_rejection = 0.
+    total = 0.
+    last_no_rejected = result.copy()
+
+    for i in range(n):
+        result,rej=next_result2(result,ro,inf_bound,team_number,nu)
+        taux_de_rejection += rej
+        if (last_bound):
+            total += wins2(result,team_number)
+        else:
+            if(who_wins(result)[team_number]<= sup_bound):
+                total += 1
+                last_no_rejected = result.copy()
+
+    print("taux de rejection pour les bornes ("+str(inf_bound)+", "+str(sup_bound)+"): "+str(taux_de_rejection*100/n)+"%")
+    if(total < 0.5):
+        print("attention aucun résultat convenable n'a été trouvé pour les bornes ("+str(inf_bound)+", "+str(sup_bound)+")")
+
+    print("score: "+str(score(last_no_rejected,team_number)))
+    return total/n,last_no_rejected
 
 
 

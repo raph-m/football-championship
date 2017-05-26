@@ -28,18 +28,19 @@ Une autre approche que l'on pourrait développer est de faire du splitting sur l
 des resimulations de quelques matchs sur le classement.
 """
 
-n_total = 100000
+n_total = 10000
 team_number = sc.get_number_with_name("Leicester")
-bound_inf = np.arange(5,10,1)
+bound_inf = np.arange(5,11,1)
+print(bound_inf)
 bound_sup = bound_inf + 1
 
 z = len(bound_inf)
 probas = np.zeros(z)
-n=int(n_total/(z+1))
+n=int(n_total/(2*z+1))
 
-first_proba ,result = sc.proba_score(bound_inf[1],team_number,sc.V,n)
+first_proba ,result = sc.proba_score(10,team_number,sc.V,n)
 print("first prob: "+str(100*first_proba)+"%")
-ro = [0.5, 0.4, 0.1, 0.01, 0.006, 0.006, 0.006, 0.006]
+ro = [0.5, 0.4, 0.1, 0.01, 0.006, 1., 0.006, 0.006]
 for i in range(z):
     print("")
     print(i)
@@ -48,9 +49,42 @@ for i in range(z):
         print("proba: "+str(100*probas[i])+"%")
     else:
         probas[i],result = sc.conditionnal_proba(result,sc.V,ro[i],team_number,10*n,bound_inf[i],last_bound=True)
+        print("ro = "+str(ro[i]))
         print("last prob: "+str(probas[i]*100)+"%")
 
 print("Probabilité finale: "+str(100*np.prod(probas)*first_proba)+"%")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
