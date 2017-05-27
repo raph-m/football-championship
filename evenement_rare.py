@@ -15,9 +15,9 @@ intervalle de confiance correcte il faut faire de tr√®s nombreux essais quand m√
 
 import Simulation_Championnat as sc
 import numpy as np
-n=100000
+n=10000
 name = "Leicester"
-""""
+
 print("Computing the proba of Leicester winning with standard simulation: (n = "+str(n)+")")
 print(str(sc.winning_championship_proba(sc.V,n,"Leicester")*100)+"%")
 print("")
@@ -31,7 +31,6 @@ name = "Sunderland"
 print("Computing the proba of "+name+" winning with preferential simulation: (n = "+str(n)+")")
 print(str(sc.rare_event_basic(name,n)*100)+"%  +-"+str(196*sc.get_variance_rare_event_basic(name,n)/np.sqrt(n))+"%")
 print("")
-"""
 
 n=10*n
 
